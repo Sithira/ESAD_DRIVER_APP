@@ -1,4 +1,8 @@
+import 'dart:developer';
+
+import 'package:bus_application/modals/toggle_trip_modal.dart';
 import 'package:bus_application/passenger_qr_scanner.dart';
+import 'package:bus_application/ticketing_backend.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -35,15 +39,14 @@ class _ToggleTrip extends State<ToggleTrip> {
                 icon: const Icon(Icons.stop_circle),
                 onPressed: () {
                   setState(() {
-                    latestTripId = "";
+                    stopTrip();
                   });
                 },
               )
             : TextButton.icon(
                 onPressed: () {
                   setState(() {
-                    latestTripId = "00002";
-                    addLatestTripDetails(tripId: latestTripId);
+                    startTrip();
                   });
                   Navigator.of(context).push(CupertinoPageRoute(
                       builder: (context) => const PassengerQRScanner()));
@@ -57,6 +60,22 @@ class _ToggleTrip extends State<ToggleTrip> {
     );
   }
 
+  void startTrip() {
+    var api = TicketingBackend();
+    api.startTrip(latestTripId);
+    getLatestTripDetails();
+  }
+
+  void stopTrip() {
+    getLatestTripDetails();
+    var api = TicketingBackend();
+    log("S -> LID: $latestTripId");
+    api.endTrip(latestTripId);
+    setState(() {
+      latestTripId = '';
+    });
+  }
+
   void addLatestTripDetails({required String tripId}) async {
     await _storage.write(key: 'LATEST_TRIP_DATA', value: '000001');
   }
@@ -64,8 +83,9 @@ class _ToggleTrip extends State<ToggleTrip> {
   void getLatestTripDetails() async {
     var data = await _storage.read(key: 'LATEST_TRIP_DATA');
     setState(() {
-      latestTripId = data as String;
-
+      log("LTD: $data");
+      latestTripId = tripDataFromJson(data!).data.id.toString();
+      log("LLID: $latestTripId");
     });
   }
 }

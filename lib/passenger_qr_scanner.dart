@@ -23,6 +23,7 @@ class _PassengerQRScannerState extends State<PassengerQRScanner> {
   @override
   void reassemble() {
     super.reassemble();
+    log('message');
     if (Platform.isAndroid) {
       controller!.pauseCamera();
     }
@@ -45,73 +46,77 @@ class _PassengerQRScannerState extends State<PassengerQRScanner> {
                   result != null
                       ? Text(
                           'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
-                      : const Text('PLACE YOUR QR IN THE BOX',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Container(
-                        margin: const EdgeInsets.all(8),
-                        child: ElevatedButton(
-                            onPressed: () async {
-                              await controller?.toggleFlash();
-                              setState(() {});
-                            },
-                            child: FutureBuilder(
-                              future: controller?.getFlashStatus(),
-                              builder: (context, snapshot) {
-                                return Text('Flash: ${snapshot.data}');
-                              },
-                            )),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.all(8),
-                        child: ElevatedButton(
-                            onPressed: () async {
-                              await controller?.flipCamera();
-                              setState(() {});
-                            },
-                            child: FutureBuilder(
-                              future: controller?.getCameraInfo(),
-                              builder: (context, snapshot) {
-                                if (snapshot.data != null) {
-                                  return Text(
-                                      'Camera facing ${describeEnum(snapshot.data!)}');
-                                } else {
-                                  return const Text('loading');
-                                }
-                              },
-                            )),
-                      )
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Container(
-                        margin: const EdgeInsets.all(8),
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            await controller?.pauseCamera();
-                          },
-                          child: const Text('pause',
-                              style: TextStyle(fontSize: 20)),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.all(8),
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            await controller?.resumeCamera();
-                          },
-                          child: const Text('resume',
-                              style: TextStyle(fontSize: 20)),
-                        ),
-                      )
-                    ],
-                  ),
+                      : Container(
+                          margin: const EdgeInsets.only(
+                              left: 10, right: 10, top: 0, bottom: 0),
+                          child: const Text('PLACE YOUR QR IN THE BOX',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                        )
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   crossAxisAlignment: CrossAxisAlignment.center,
+                  //   children: <Widget>[
+                  //     Container(
+                  //       margin: const EdgeInsets.all(8),
+                  //       child: ElevatedButton(
+                  //           onPressed: () async {
+                  //             await controller?.toggleFlash();
+                  //             setState(() {});
+                  //           },
+                  //           child: FutureBuilder(
+                  //             future: controller?.getFlashStatus(),
+                  //             builder: (context, snapshot) {
+                  //               return Text('Flash: ${snapshot.data}');
+                  //             },
+                  //           )),
+                  //     ),
+                  //     Container(
+                  //       margin: const EdgeInsets.all(8),
+                  //       child: ElevatedButton(
+                  //           onPressed: () async {
+                  //             await controller?.flipCamera();
+                  //             setState(() {});
+                  //           },
+                  //           child: FutureBuilder(
+                  //             future: controller?.getCameraInfo(),
+                  //             builder: (context, snapshot) {
+                  //               if (snapshot.data != null) {
+                  //                 return Text(
+                  //                     'Camera facing ${describeEnum(snapshot.data!)}');
+                  //               } else {
+                  //                 return const Text('loading');
+                  //               }
+                  //             },
+                  //           )),
+                  //     )
+                  //   ],
+                  // ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   crossAxisAlignment: CrossAxisAlignment.center,
+                  //   children: <Widget>[
+                  //     Container(
+                  //       margin: const EdgeInsets.all(8),
+                  //       child: ElevatedButton(
+                  //         onPressed: () async {
+                  //           await controller?.pauseCamera();
+                  //         },
+                  //         child: const Text('pause',
+                  //             style: TextStyle(fontSize: 20)),
+                  //       ),
+                  //     ),
+                  //     Container(
+                  //       margin: const EdgeInsets.all(8),
+                  //       child: ElevatedButton(
+                  //         onPressed: () async {
+                  //           await controller?.resumeCamera();
+                  //         },
+                  //         child: const Text('resume',
+                  //             style: TextStyle(fontSize: 20)),
+                  //       ),
+                  //     )
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -150,10 +155,17 @@ class _PassengerQRScannerState extends State<PassengerQRScanner> {
     controller.scannedDataStream.listen((scanData) {
       if (scanData.code != null) {
         setState(() {
-          result = scanData;
+          var scanData = result?.code;
           controller.pauseCamera();
-          Navigator.of(context).push(
-              CupertinoPageRoute(builder: (context) => const ScanSuccess(journeyType: 'started')));
+          Navigator.of(context)
+              .push(CupertinoPageRoute(
+                  builder: (context) =>
+                      ScanSuccess(journeyType: 'started', scanData: scanData)))
+              .then((val) {
+            setState(() {
+              controller.resumeCamera();
+            });
+          });
         });
       }
     });

@@ -1,0 +1,41 @@
+{
+  "timestamp": "2021-10-29T17:41:51.069+00:00",
+  "data": {
+    "data": {
+      "id": 1,
+      "nic": "1234567890",
+      "email": "driver1@test.com",
+      "firstName": "Test",
+      "lastName": "Driver",
+      "mobileNumber": "0777123123",
+      "userType": "DRIVER",
+      "currentBalance": 0.0
+    },
+    "vehicle": {
+      "id": 1,
+      "driverId": 1,
+      "ownerId": 3,
+      "routeId": 1,
+      "regNo": "NA - 1020",
+      "route": {
+        "route": 1,
+        "routeName": "Avissawella - Colombo",
+        "routeNumber": 122,
+        "startLocation": {
+          "id": 2,
+          "lat": 6.952232,
+          "lng": 80.212593
+        },
+        "endLocation": {
+          "id": 3,
+          "lat": 39.810699,
+          "lng": -84.247620
+        },
+        "startLocationName": "Avissawella",
+        "endLocationName": "Colombo"
+      }
+    }
+  },
+  "message": "Colombo",
+  "status": 1
+}

@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:bus_application/ticketing_backend.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ScanSuccess extends StatefulWidget {
   final String journeyType;
+  final String? scanData;
 
-  const ScanSuccess({Key? key, required this.journeyType}) : super(key: key);
+  const ScanSuccess({Key? key, required this.journeyType, this.scanData})
+      : super(key: key);
 
   @override
   State createState() => _ScanSuccess();
@@ -16,20 +19,34 @@ class _ScanSuccess extends State<ScanSuccess> {
   late Timer _timer;
   int _start = 5;
 
+  String username = '';
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
   void startTimer() {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
       (Timer timer) {
         if (_start == 0) {
-          setState(() {
-            timer.cancel();
-            Navigator.of(context).pop();
-          });
+          timer.cancel();
+          Navigator.pop(context);
         } else {
-          setState(() {
-            _start--;
-          });
+          if (mounted) {
+            setState(() {
+              _start--;
+            });
+          }
         }
       },
     );
@@ -37,7 +54,7 @@ class _ScanSuccess extends State<ScanSuccess> {
 
   @override
   Widget build(BuildContext context) {
-    startTimer();
+    getName();
     return Scaffold(
         body: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -46,7 +63,7 @@ class _ScanSuccess extends State<ScanSuccess> {
             child: Column(
           children: [
             Text(
-              "Hi Jane, you have successfully ${widget.journeyType} the journey",
+              "Hi $username, you have successfully ${widget.journeyType} the journey",
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
               textAlign: TextAlign.center,
             ),
@@ -59,5 +76,15 @@ class _ScanSuccess extends State<ScanSuccess> {
         ))
       ],
     ));
+  }
+
+  void getName() async {
+    var api = TicketingBackend();
+    var data = await api.getFromStorage();
+    if (mounted) {
+      setState(() {
+        username = data.data.data.firstName;
+      });
+    }
   }
 }
